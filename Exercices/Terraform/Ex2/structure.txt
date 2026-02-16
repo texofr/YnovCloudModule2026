@@ -1,0 +1,14 @@
+PROJET-TERRAFORM/
+├── main.tf                 # Appel des modules (Le chef d'orchestre)
+├── variables.tf            # Variables globales
+├── outputs.tf             <-- POUR VOUS (ex: afficher l'IP finale)
+├── modules/                # Dossier contenant nos briques
+│   ├── network/
+│   │   ├── outputs.tf     <-- POUR TERRAFORM (ex: donner l'ID du subnet au module VM)
+│   │   ├── main.tf
+│   │   └── variables.tf
+│   └── compute/
+│       ├── main.tf
+│       └── variables.tf
+
+

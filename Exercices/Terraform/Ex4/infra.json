@@ -1,0 +1,28 @@
+{
+  "project_name": "lab-secure",
+  "environment": "dev",
+  "location": "francecentral",
+  "networking": {
+    "vnet_cidr": "10.0.0.0/16",
+    "subnet_private_endpoints_cidr": "10.0.1.0/24",
+    "subnet_app_integration_cidr": "10.0.2.0/24"
+  },
+  "resources": {
+    "storage_accounts": [
+      { "name": "stlabdata01", "sku": "Standard_LRS" },
+      { "name": "stlablogs01", "sku": "Standard_GRS" }
+    ],
+    "databases": [
+      { "name": "sql-app-db", "sku": "GP_S_Gen5_1" }
+    ],
+    "keyvault": {
+      "enabled": true,
+      "name": "kv-secure-lab"
+    },
+    "webapp": {
+      "enabled": true,
+      "name": "app-internal-dashboard",
+      "sku": "P1v2"
+    }
+  }
+}
