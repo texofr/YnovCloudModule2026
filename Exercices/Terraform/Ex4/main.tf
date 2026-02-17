@@ -1,82 +1,87 @@
+# --- 1. CONFIGURATION LOCALE & PARSING JSON ---
+locals {
+  infra = jsondecode(file("infra.json"))
+
+  # Aplatissement des listes pour gérer plusieurs ressources par RG
+  all_dbs = flatten([for rg, v in local.infra.resource_groups : [for d in lookup(v, "databases", []) : merge(d, { rg = rg })]])
+  all_st  = flatten([for rg, v in local.infra.resource_groups : [for s in lookup(v, "storage_accounts", []) : merge(s, { rg = rg })]])
+}
+
+# --- 2. PROVIDERS ---
 terraform {
   required_providers {
-    azurerm = { source = "hashicorp/azurerm", version = "~> 3.0" }
-    random  = { source = "hashicorp/random", version = "~> 3.0" }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
   }
-  backend "local" {} # Pour le lab. À changer pour azurerm en prod
 }
 
 provider "azurerm" {
   features {}
 }
 
-# --- CHARGEMENT DU JSON ---
-locals {
-  config = jsondecode(file("infra.json"))
+# --- 3. RESSOURCES DE BASE (RESOURCE GROUPS) ---
+resource "azurerm_resource_group" "rgs" {
+  for_each = local.infra.resource_groups
+  name     = each.key
+  location = each.value.location
 }
 
-# --- GROUPE DE RESSOURCES ---
-resource "azurerm_resource_group" "rg" {
-  name     = "RG-${local.config.project_name}-${local.config.environment}"
-  location = local.config.location
+# --- 4. MODULE RÉSEAUX ---
+module "networks" {
+  for_each     = local.infra.resource_groups
+  source       = "./modules/network"
+  rg_name      = azurerm_resource_group.rgs[each.key].name
+  location     = each.value.location
+  vnet_name    = each.value.networking.vnet_name
+  vnet_cidr    = each.value.networking.vnet_cidr
+  pe_subnet    = each.value.networking.pe_subnet
+  integ_subnet = each.value.networking.integ_subnet
 }
 
-# --- MODULE RÉSEAU (Fondation) ---
-module "network" {
-  source = "./modules/network"
+# --- 5. MODULE SQL DATABASES ---
 
-  rg_name      = azurerm_resource_group.rg.name
-  location     = azurerm_resource_group.rg.location
-  vnet_name    = "vnet-${local.config.project_name}"
-  vnet_cidr    = local.config.networking.vnet_cidr
-  pe_subnet    = local.config.networking.subnet_private_endpoints_cidr
-  integ_subnet = local.config.networking.subnet_app_integration_cidr
+module "databases" {
+  for_each       = { for db in local.all_dbs : db.name => db }
+  source         = "./modules/sql"
+  name           = each.value.name
+  sku            = each.value.sku
+  admin_username = each.value.admin_user 
+  rg_name        = azurerm_resource_group.rgs[each.value.rg].name
+  location       = local.infra.location
+  subnet_id      = module.networks[each.value.rg].subnet_pe_id 
 }
 
-# --- MODULE STORAGE (Boucle sur la liste) ---
-module "storage" {
-  for_each = { for st in local.config.resources.storage_accounts : st.name => st }
-  source   = "./modules/storage_prive"
-
+# --- 6. MODULE STORAGE ACCOUNTS  ---
+module "storage_accounts" {
+  for_each  = { for st in local.all_st : st.name => st }
+  source    = "./modules/storage"
   name      = each.value.name
   sku       = each.value.sku
-  rg_name   = azurerm_resource_group.rg.name
-  location  = azurerm_resource_group.rg.location
-  subnet_id = module.network.subnet_pe_id
+  rg_name   = azurerm_resource_group.rgs[each.value.rg].name
+  location  = local.infra.location
+  subnet_id = module.networks[each.value.rg].subnet_pe_id
 }
 
-# --- MODULE SQL (Boucle sur la liste) ---
-module "database" {
-  for_each = { for db in local.config.resources.databases : db.name => db }
-  source   = "./modules/database_privee"
-
+# --- 7. MODULE KEYVAULTS ---
+module "keyvaults" {
+  for_each  = { for k, v in local.infra.resource_groups : k => v.keyvault if lookup(v, "keyvault", null) != null }
+  source    = "./modules/keyvault"
   name      = each.value.name
-  sku       = each.value.sku
-  rg_name   = azurerm_resource_group.rg.name
-  location  = azurerm_resource_group.rg.location
-  subnet_id = module.network.subnet_pe_id
+  rg_name   = azurerm_resource_group.rgs[each.key].name
+  location  = local.infra.location
+  subnet_id = module.networks[each.key].subnet_pe_id
 }
 
-# --- MODULE KEYVAULT (Conditionnel) ---
-module "keyvault" {
-  count  = local.config.resources.keyvault.enabled ? 1 : 0
-  source = "./modules/keyvault_prive"
-
-  name      = local.config.resources.keyvault.name
-  rg_name   = azurerm_resource_group.rg.name
-  location  = azurerm_resource_group.rg.location
-  subnet_id = module.network.subnet_pe_id
-}
-
-# --- MODULE WEB APP (Conditionnel) ---
-module "webapp" {
-  count  = local.config.resources.webapp.enabled ? 1 : 0
-  source = "./modules/webapp_prive"
-
-  name                  = local.config.resources.webapp.name
-  sku                   = local.config.resources.webapp.sku
-  rg_name               = azurerm_resource_group.rg.name
-  location              = azurerm_resource_group.rg.location
-  subnet_pe_id          = module.network.subnet_pe_id    # Pour l'entrée privée
-  subnet_integration_id = module.network.subnet_integ_id # Pour la sortie vers la DB
+# --- 8. MODULE WEBAPPS (SÉPARÉ) ---
+module "webapps" {
+  for_each              = { for k, v in local.infra.resource_groups : k => v.webapp if lookup(v, "webapp", null) != null }
+  source                = "./modules/webapp"
+  name                  = each.value.name
+  sku                   = each.value.sku
+  rg_name               = azurerm_resource_group.rgs[each.key].name
+  location              = local.infra.location
+  subnet_pe_id          = module.networks[each.key].subnet_pe_id # Liaison entrée
+  subnet_integration_id = module.networks[each.key].subnet_integ_id # Liaison sortie
 }

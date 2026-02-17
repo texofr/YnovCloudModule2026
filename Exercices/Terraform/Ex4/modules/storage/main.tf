@@ -1,9 +1,4 @@
 # modules/storage_prive/main.tf
-variable "name" {}
-variable "sku" {}
-variable "rg_name" {}
-variable "location" {}
-variable "subnet_id" {}
 
 resource "azurerm_storage_account" "st" {
   name                     = var.name

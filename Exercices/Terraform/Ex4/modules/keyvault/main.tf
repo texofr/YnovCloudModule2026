@@ -1,5 +1,4 @@
 # modules/keyvault_prive/main.tf
-# (Variables identiques aux précédents...)
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "kv" {

@@ -1,9 +1,4 @@
 # modules/database_privee/main.tf
-variable "name" {}
-variable "sku" {}
-variable "rg_name" {}
-variable "location" {}
-variable "subnet_id" {}
 
 resource "random_password" "pass" {
   length = 16
