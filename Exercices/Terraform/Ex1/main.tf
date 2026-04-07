@@ -12,7 +12,7 @@ terraform {
   # Configuration du stockage distant pour le fichier d'état
   backend "azurerm" {
     resource_group_name  = "RG-TERRAFORM-BACKEND"
-    storage_account_name = "sttfstate[VOS_INITIALES]" # À modifier
+    storage_account_name = "sttfstatelab"
     container_name       = "tfstate"
     key                  = "prod.terraform.tfstate"
   }
@@ -51,7 +51,16 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Interface Réseau (NIC) - Le "câble" de la VM
+# Adresse IP Publique
+resource "azurerm_public_ip" "pip" {
+  name                = "IP-PUBLIC-VM"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+# Interface Réseau (NIC) - Le câble de la VM
 resource "azurerm_network_interface" "nic" {
   name                = "NIC-VM-TF"
   location            = azurerm_resource_group.rg.location
@@ -61,6 +70,7 @@ resource "azurerm_network_interface" "nic" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip.id
   }
 }
 
@@ -71,12 +81,13 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = azurerm_resource_group.rg.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
+  disable_password_authentication = false
 
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
 
-  # Utilisation d'une clé SSH générée localement
+  # Utilisation d'une clé SSH générée localement (nécessite ~/.ssh/id_rsa.pub)
   admin_ssh_key {
     username   = "azureuser"
     public_key = file("~/.ssh/id_rsa.pub")

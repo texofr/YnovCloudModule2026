@@ -28,8 +28,8 @@ provider "azurerm" {
 # -----------------------------------------------------------------------
 
 resource "azurerm_resource_group" "rg" {
-  name     = "RG-MODULAIRE-LAB"
-  location = "France Central"
+  name     = var.rg_name
+  location = var.location
 }
 
 # Appel du module Réseau
@@ -37,9 +37,9 @@ module "mon_reseau" {
   source      = "./modules/network"
   rg_name     = azurerm_resource_group.rg.name
   location    = azurerm_resource_group.rg.location
-  vnet_name   = "VNET-PROD"
-  vnet_cidr   = "10.0.0.0/16"
-  subnet_cidr = "10.0.1.0/24"
+  vnet_name   = var.vnet_params.name
+  vnet_cidr   = var.vnet_params.vnet_cidr
+  subnet_cidr = var.vnet_params.subnet_cidr
 }
 
 # Appel du module VM
@@ -47,7 +47,7 @@ module "ma_vm" {
   source           = "./modules/compute"
   rg_name          = azurerm_resource_group.rg.name
   location         = azurerm_resource_group.rg.location
-  vm_name          = "SRV-WEB-01"
+  vm_name          = var.vm_name
   admin_username   = var.admin_username
   target_subnet_id = module.mon_reseau.subnet_id # On récupère l'output du module network !
 }

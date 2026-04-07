@@ -43,12 +43,11 @@ module "networks" {
 # --- 5. MODULE SQL DATABASES ---
 
 module "databases" {
-  for_each       = { for db in local.all_dbs : db.name => db }
-  source         = "./modules/sql"
-  name           = each.value.name
-  sku            = each.value.sku
-  admin_username = each.value.admin_user 
-  rg_name        = azurerm_resource_group.rgs[each.value.rg].name
+  for_each = { for db in local.all_dbs : db.name => db }
+  source   = "./modules/sql"
+  name     = each.value.name
+  sku      = each.value.sku
+  rg_name  = azurerm_resource_group.rgs[each.value.rg].name
   location       = local.infra.location
   subnet_id      = module.networks[each.value.rg].subnet_pe_id 
 }
@@ -70,7 +69,7 @@ module "keyvaults" {
   source    = "./modules/keyvault"
   name      = each.value.name
   rg_name   = azurerm_resource_group.rgs[each.key].name
-  location  = local.infra.location
+  location  = local.infra.resource_groups[each.key].location
   subnet_id = module.networks[each.key].subnet_pe_id
 }
 

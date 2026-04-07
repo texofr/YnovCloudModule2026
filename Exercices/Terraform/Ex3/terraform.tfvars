@@ -1,8 +1,9 @@
 # terraform.tfvars (À la racine)
 
-location = "North Europe"
-vm_name  = "SRV-PROD-APP"
-rg_name  = "RG-FINAL-PROJECT"
+location       = "North Europe"
+vm_name        = "SRV-PROD-APP"
+rg_name        = "RG-FINAL-PROJECT"
+admin_username = "azureuser"
 
 vnet_params = {
   name        = "VNET-HYBRIDE"

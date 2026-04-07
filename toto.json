@@ -1,0 +1,148 @@
+{
+  "location": "germanywestcentral",
+  "tags": {
+    "G-number": "G00004",
+    "application": "AzureFoundation",
+    "cmdb-link": "link to CMDB structure",
+    "code-managed": "yes",
+    "cost-center": "1003000154",
+    "env": "build",
+    "owner": "github-administration.de@dekra.com"
+  },
+  "properties": {
+    "addressSpace": {
+      "addressPrefixes": [
+        "10.216.40.0/22"
+      ]
+    },
+    "encryption": {
+      "enabled": false,
+      "enforcement": "AllowUnencrypted"
+    },
+    "dhcpOptions": {
+      "dnsServers": [
+        "10.216.127.244",
+        "10.216.127.245"
+      ]
+    },
+    "enableDdosProtection": false,
+    "subnets": [
+      {
+        "name": "snet-compose-build-aks-nodes-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.40.0/25"
+          ],
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-gwc-001"
+          },
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "name": "snet-compose-build-appservice-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.40.128/26"
+          ],
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-gwc-001"
+          },
+          "delegations": [
+            {
+              "name": "Microsoft.Web/serverFarms",
+              "properties": {
+                "serviceName": "Microsoft.Web/serverFarms"
+              }
+            }
+          ],
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "name": "snet-compose-build-sharedservices-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.40.192/26"
+          ],
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-gwc-001"
+          },
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "name": "snet-compose-build-postgresql-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.41.0/27"
+          ],
+          "networkSecurityGroup": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/networkSecurityGroups/nsg-snet-compose-build-postgresql-gwc-001"
+          },
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-postgresql-gwc-001"
+          },
+          "delegations": [
+            {
+              "name": "Microsoft.DBforPostgreSQL/flexibleServers",
+              "properties": { "serviceName": "Microsoft.DBforPostgreSQL/flexibleServers" }
+            }
+          ],
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "name": "snet-compose-build-mysql-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.41.32/27"
+          ],
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-mysql-gwc-001"
+          },
+          "delegations": [
+            {
+              "name": "Microsoft.DBforMySQL/flexibleServers",
+              "properties": { "serviceName": "Microsoft.DBforMySQL/flexibleServers" }
+            }
+          ],
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      },
+      {
+        "name": "snet-compose-build-runners-gwc-001",
+        "properties": {
+          "addressPrefixes": [
+            "10.216.41.64/28"
+          ],
+          "routeTable": {
+            "id": "/subscriptions/459bc9c0-9656-4eac-b458-ef4ca3eec716/resourceGroups/rg-compose-landingzone-build-gwc/providers/Microsoft.Network/routeTables/udr-snet-compose-build-gwc-001"
+          },
+          "privateEndpointNetworkPolicies": "Enabled",
+          "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+      }
+    ],
+    "virtualNetworkPeerings": [
+      {
+        "name": "peering_sub-global-compose-build-001-build-germanywestcentral_to_hub",
+        "properties": {
+          "remoteVirtualNetwork": {
+            "id": "/subscriptions/80d4358f-8dde-4c92-a621-b2057135e940/resourceGroups/rg-network-prod-gwc/providers/Microsoft.Network/virtualNetworks/vnet-hubnetwork-prod-gwc"
+          },
+          "allowVirtualNetworkAccess": true,
+          "allowForwardedTraffic": true,
+          "allowGatewayTransit": false,
+          "useRemoteGateways": false,
+          "doNotVerifyRemoteGateways": false
+        }
+      }
+    ]
+  }
+}

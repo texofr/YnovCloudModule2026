@@ -1,4 +1,12 @@
 # modules/compute/main.tf
+resource "azurerm_public_ip" "pip" {
+  name                = "${var.vm_name}-pip"
+  location            = var.location
+  resource_group_name = var.rg_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
 resource "azurerm_network_interface" "nic" {
   name                = "${var.vm_name}-nic"
   location            = var.location
@@ -8,6 +16,7 @@ resource "azurerm_network_interface" "nic" {
     name                          = "internal"
     subnet_id                     = var.target_subnet_id # Reçu du module Network
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip.id
   }
 }
 
@@ -16,11 +25,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
   resource_group_name = var.rg_name
   location            = var.location
   size                = "Standard_B1s"
-  admin_username      = "azureuser"
+  admin_username      = var.admin_username
   network_interface_ids = [azurerm_network_interface.nic.id]
- # Utilisation d'une clé SSH générée localement
+  # Utilisation d'une clé SSH générée localement
   admin_ssh_key {
-    username   = "azureuser"
+    username   = var.admin_username
     public_key = file("~/.ssh/id_rsa.pub")
   }
 
