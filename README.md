@@ -400,10 +400,8 @@ terraform destroy -var-file=dev.tfvars
 Chaque exercice utilise Azure Storage pour l'état distant :
 
 ```bash
-# Ex1-Ex3: Remplacer [VOS_INITIALES]
+# Ex1-Ex4: Remplacer [VOS_INITIALES]
 storage_account_name = "sttfstate[VOS_INITIALES]"
-
-# Ex4: Utilise le backend local par défaut
 ```
 
 Initialiser le backend :

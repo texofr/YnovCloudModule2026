@@ -15,6 +15,14 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  # Configuration du stockage distant pour le fichier d'etat
+  backend "azurerm" {
+    resource_group_name  = "RG-TERRAFORM-BACKEND"
+    storage_account_name = "sttfstate[VOS_INITIALES]" # A modifier
+    container_name       = "tfstate"
+    key                  = "ex4.terraform.tfstate"
+  }
 }
 
 provider "azurerm" {
