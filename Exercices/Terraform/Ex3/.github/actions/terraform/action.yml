@@ -1,0 +1,41 @@
+name: Terraform Runner
+description: Reusable Terraform action for deploy or destroy workflows
+
+inputs:
+  environment:
+    description: Environment to target (dev or prod)
+    required: true
+  operation:
+    description: Operation to run (apply or destroy)
+    required: true
+    default: apply
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      shell: bash
+      run: |
+        terraform init \
+          -backend-config="key=${{ inputs.environment }}.terraform.tfstate"
+
+    - name: Terraform Plan
+      shell: bash
+      run: |
+        if [ "${{ inputs.operation }}" = "destroy" ]; then
+          terraform plan -destroy -var-file="${{ inputs.environment }}.tfvars"
+        else
+          terraform plan -var-file="${{ inputs.environment }}.tfvars"
+        fi
+
+    - name: Terraform Apply Or Destroy
+      shell: bash
+      run: |
+        if [ "${{ inputs.operation }}" = "destroy" ]; then
+          terraform destroy -var-file="${{ inputs.environment }}.tfvars" -auto-approve
+        else
+          terraform apply -var-file="${{ inputs.environment }}.tfvars" -auto-approve
+        fi
