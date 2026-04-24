@@ -5,26 +5,56 @@ inputs:
   environment:
     description: Environment to target (dev or prod)
     required: true
+    default: dev
   operation:
     description: Operation to run (apply or destroy)
     required: true
     default: apply
+  working-directory:
+    description: Terraform root directory relative to repository root
+    required: false
+    default: .
 
 runs:
   using: composite
   steps:
+    - name: Validate Inputs
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        case "${{ inputs.environment }}" in
+          dev|prod) ;;
+          *)
+            echo "Invalid environment: ${{ inputs.environment }} (allowed: dev, prod)" >&2
+            exit 1
+            ;;
+        esac
+
+        case "${{ inputs.operation }}" in
+          apply|destroy) ;;
+          *)
+            echo "Invalid operation: ${{ inputs.operation }} (allowed: apply, destroy)" >&2
+            exit 1
+            ;;
+        esac
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Init
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
+        set -euo pipefail
         terraform init \
           -backend-config="key=${{ inputs.environment }}.terraform.tfstate"
 
     - name: Terraform Plan
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
+        set -euo pipefail
         if [ "${{ inputs.operation }}" = "destroy" ]; then
           terraform plan -destroy -var-file="${{ inputs.environment }}.tfvars"
         else
@@ -33,7 +63,9 @@ runs:
 
     - name: Terraform Apply Or Destroy
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
+        set -euo pipefail
         if [ "${{ inputs.operation }}" = "destroy" ]; then
           terraform destroy -var-file="${{ inputs.environment }}.tfvars" -auto-approve
         else

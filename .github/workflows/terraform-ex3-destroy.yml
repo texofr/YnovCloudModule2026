@@ -1,10 +1,10 @@
-name: 'Terraform Destroy'
+name: 'Terraform Ex3 Destroy'
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environnement à détruire (dev ou prod)'
+        description: 'Environnement a detruire (dev ou prod)'
         required: true
         default: 'dev'
         type: choice
@@ -32,18 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: |
-          # On utilise une clé différente pour le tfstate selon l'environnement
-          terraform init \
-            -backend-config="key=${{ github.event.inputs.environment }}.terraform.tfstate"
-
-      - name: Terraform Plan Destroy
-        run: terraform plan -destroy -var-file="${{ github.event.inputs.environment }}.tfvars"
-
       - name: Terraform Destroy
         if: github.ref == 'refs/heads/main'
-        run: terraform destroy -var-file="${{ github.event.inputs.environment }}.tfvars" -auto-approve
+        uses: ./Exercices/Terraform/Ex3/.github/actions/terraform
+        with:
+          environment: ${{ github.event.inputs.environment }}
+          operation: destroy
+          working-directory: Exercices/Terraform/Ex3
