@@ -2,7 +2,7 @@
 
 location = "North Europe"
 vm_name  = "SRV-PROD-APP"
-rg_name  = "RG-FINAL-PROJECT"
+rg_name  = "RG-B3-Eric"
 
 vnet_params = {
   name        = "VNET-HYBRIDE"
