@@ -89,7 +89,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                = "VM-TERRAFORM-01"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
-  size                = "Standard_B1s"
+  size                = "Standard_D2als_v6"
   admin_username      = "azureuser"
   admin_password      = var.vm_admin_password
   disable_password_authentication = false
