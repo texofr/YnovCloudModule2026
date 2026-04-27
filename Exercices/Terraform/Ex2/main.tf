@@ -12,8 +12,8 @@ terraform {
 
   # Configuration du stockage distant pour le fichier d'état
   backend "azurerm" {
-    resource_group_name  = "RG-TERRAFORM-BACKEND"
-    storage_account_name = "sttfstate[VOS_INITIALES]" # À modifier
+    resource_group_name  = "RG-B3-Eric"
+    storage_account_name = "sttfstatelabynovepe"
     container_name       = "tfstate"
     key                  = "prod.terraform.tfstate"
   }
@@ -48,5 +48,6 @@ module "ma_vm" {
   location         = data.azurerm_resource_group.rg.location
   vm_name          = var.vm_name
   admin_username   = var.admin_username
+  admin_password   = var.admin_password
   target_subnet_id = module.mon_reseau.subnet_id # On récupère l'output du module network !
 }

@@ -24,14 +24,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
   resource_group_name = var.rg_name
   location            = var.location
-  size                = "Standard_B1s"
+  size                = "Standard_D2als_v6"
   admin_username      = var.admin_username
+  admin_password      = var.admin_password
+  disable_password_authentication = false
   network_interface_ids = [azurerm_network_interface.nic.id]
-  # Utilisation d'une clé SSH générée localement
-  admin_ssh_key {
-    username   = var.admin_username
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
 
   os_disk {
     caching              = "ReadWrite"
@@ -41,7 +38,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    sku       = "22_04-lts-gen2"
     version   = "latest"
   }
 }
