@@ -5,6 +5,7 @@
 *.tfstate
 *.tfstate.backup
 *.tfstate.lock.info
+*.terraform.lock.hcl
 
 # 3. Ignore local variables and override files
 *.tfvars
