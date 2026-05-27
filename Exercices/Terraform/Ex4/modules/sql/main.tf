@@ -1,7 +1,7 @@
 # modules/database_privee/main.tf
 
 resource "random_password" "pass" {
-  length = 16
+  length  = 16
   special = true
 }
 
@@ -12,7 +12,7 @@ resource "azurerm_mssql_server" "sql" {
   version                      = "12.0"
   administrator_login          = "sqladmin"
   administrator_login_password = random_password.pass.result
-  
+
   # SÉCURITÉ : Pas d'accès public
   public_network_access_enabled = false
 }
@@ -34,5 +34,13 @@ resource "azurerm_private_endpoint" "pe" {
     private_connection_resource_id = azurerm_mssql_server.sql.id
     subresource_names              = ["sqlServer"]
     is_manual_connection           = false
+  }
+
+  dynamic "private_dns_zone_group" {
+    for_each = length(var.private_dns_zone_ids) > 0 ? [1] : []
+    content {
+      name                 = "default"
+      private_dns_zone_ids = var.private_dns_zone_ids
+    }
   }
 }

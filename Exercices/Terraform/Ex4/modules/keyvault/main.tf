@@ -2,18 +2,18 @@
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "kv" {
-  name                        = var.name
-  location                    = var.location
-  resource_group_name         = var.rg_name
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
-  sku_name                    = "standard"
-  purge_protection_enabled    = false # Pour le lab
+  name                     = var.name
+  location                 = var.location
+  resource_group_name      = var.rg_name
+  tenant_id                = data.azurerm_client_config.current.tenant_id
+  sku_name                 = "standard"
+  purge_protection_enabled = false # Pour le lab
 
   public_network_access_enabled = false # Mode Privé
-  
+
   access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+    object_id          = data.azurerm_client_config.current.object_id
     secret_permissions = ["Get", "List", "Set"]
   }
 }
@@ -29,5 +29,13 @@ resource "azurerm_private_endpoint" "pe" {
     private_connection_resource_id = azurerm_key_vault.kv.id
     subresource_names              = ["vault"]
     is_manual_connection           = false
+  }
+
+  dynamic "private_dns_zone_group" {
+    for_each = length(var.private_dns_zone_ids) > 0 ? [1] : []
+    content {
+      name                 = "default"
+      private_dns_zone_ids = var.private_dns_zone_ids
+    }
   }
 }

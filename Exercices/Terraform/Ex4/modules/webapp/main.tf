@@ -15,11 +15,11 @@ resource "azurerm_linux_web_app" "app" {
   resource_group_name = var.rg_name
   location            = var.location
   service_plan_id     = azurerm_service_plan.plan.id
-  
+
   # CONFIGURATION DE SORTIE (VNet Integration)
   # Permet à l'App d'atteindre le SQL/Storage en interne
-  virtual_network_subnet_id = var.subnet_integration_id 
-  
+  virtual_network_subnet_id = var.subnet_integration_id
+
   # CONFIGURATION D'ENTRÉE (Sécurité)
   # Désactive l'accès via l'URL publique .azurewebsites.net
   public_network_access_enabled = false
@@ -42,5 +42,13 @@ resource "azurerm_private_endpoint" "pe" {
     private_connection_resource_id = azurerm_linux_web_app.app.id
     subresource_names              = ["sites"]
     is_manual_connection           = false
+  }
+
+  dynamic "private_dns_zone_group" {
+    for_each = length(var.private_dns_zone_ids) > 0 ? [1] : []
+    content {
+      name                 = "default"
+      private_dns_zone_ids = var.private_dns_zone_ids
+    }
   }
 }
