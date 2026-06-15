@@ -15,8 +15,6 @@ on:
 permissions:
   contents: read
   id-token: write
-  actions: read
-  security-events: write # for security scan
 
 jobs:
   terraform:
