@@ -118,8 +118,8 @@ Ex2/
 ```bash
 cd Exercices/Terraform/Ex2/
 terraform init
-terraform plan
-terraform apply -var-file=terraform.tfvars
+terraform plan  --var-file=terraform.tfvars
+terraform apply --var-file=terraform.tfvars
 ```
 
 **Résultat attendu :** Même résultat fonctionnel qu'Ex1 (VNet + VM Linux + IP publique), mais déployé avec architecture modulaire et sortie d'IP via output racine.
